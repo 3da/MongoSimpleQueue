@@ -7,5 +7,10 @@ namespace MongoSimpleQueue.Tests
 	public class SimpleDocument
 	{
 		public string Value { get; set; }
+
+		public override string ToString()
+		{
+			return $"Value: {Value}";
+		}
 	}
 }

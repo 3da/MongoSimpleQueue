@@ -20,13 +20,13 @@ namespace MongoSimpleQueue
 
 		public EnqueOptions DefaultEnqueueOptions { get; set; } = new EnqueOptions();
 
-		public SimpleQueue()
+		public SimpleQueue(string collectionName)
 		{
 			_mongoClient = new MongoClient();
 
 			_dataBase = _mongoClient.GetDatabase("database");
 
-			_collection = _dataBase.GetCollection<QueueItem<TPayload>>("queue");
+			_collection = _dataBase.GetCollection<QueueItem<TPayload>>(collectionName);
 
 			_collection.Indexes.CreateOne(new CreateIndexModel<QueueItem<TPayload>>(Builders<QueueItem<TPayload>>.IndexKeys.Descending(q => q.Priority)));
 		}

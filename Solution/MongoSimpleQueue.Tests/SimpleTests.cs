@@ -12,7 +12,7 @@ namespace MongoSimpleQueue.Tests
 		[TestMethod]
 		public async Task TestEnqueueDeque()
 		{
-			var queue = new SimpleQueue<SimpleDocument>();
+			var queue = new SimpleQueue<SimpleDocument>(this.GetType().FullName);
 
 			await queue.Clear();
 
@@ -45,7 +45,7 @@ namespace MongoSimpleQueue.Tests
 
 			var priorities = Enumerable.Range(1, 200).OrderBy(q => rand.Next()).ToList();
 
-			var queue = new SimpleQueue<SimpleDocument>();
+			var queue = new SimpleQueue<SimpleDocument>(this.GetType().FullName);
 
 			await queue.Clear();
 
@@ -75,7 +75,7 @@ namespace MongoSimpleQueue.Tests
 		public async Task TestNoPriority()
 		{
 
-			var queue = new SimpleQueue<SimpleDocument>();
+			var queue = new SimpleQueue<SimpleDocument>(this.GetType().FullName);
 
 			await queue.Clear();
 
