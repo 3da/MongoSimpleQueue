@@ -13,7 +13,7 @@ namespace MongoSimpleQueue
 
 		public byte Priority { get; set; }
 
-		public DateTime? LastWorkTime { get; set; }
+		public DateTime? MustBeCompletedUntil { get; set; }
 
 		public DateTime? StartAfterDateTime { get; set; }
 

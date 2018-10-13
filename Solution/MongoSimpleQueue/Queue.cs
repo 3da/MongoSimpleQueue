@@ -49,26 +49,26 @@ namespace MongoSimpleQueue
 			return Enqueue(payload, DefaultEnqueueOptions);
 		}
 
-		public async Task<TPayload> Dequeue(DequeueOptions dequeueOptions)
+		public async Task<QueueItem<TPayload>> Dequeue(DequeueOptions dequeueOptions)
 		{
 			var now = DateTime.UtcNow;
 			var time = DateTime.UtcNow.AddMinutes(-1);
 
-			var updateOptions = new FindOneAndUpdateOptions<QueueItem<TPayload>, TPayload>()
+			var updateOptions = new FindOneAndUpdateOptions<QueueItem<TPayload>>()
 			{
-				Projection = Builders<QueueItem<TPayload>>.Projection.Expression(w => w.Payload),
+				//Projection = Builders<QueueItem<TPayload>>.Projection.Expression(w => w.Payload),
 				Sort = Builders<QueueItem<TPayload>>.Sort.Descending(q => q.Priority)
 			};
 
-			var queueItem = await _collection.FindOneAndUpdateAsync(q =>
-			(q.LastWorkTime == null || q.LastWorkTime.Value < time)
+			var queueItem = await _collection.FindOneAndUpdateAsync<QueueItem<TPayload>>(q =>
+			(q.MustBeCompletedUntil == null || q.MustBeCompletedUntil.Value < now)
 			&& (q.StartAfterDateTime == null || q.StartAfterDateTime >= now),
-				_updateDefinitionBuilder.Set(q => q.LastWorkTime, now), updateOptions);
+				_updateDefinitionBuilder.Set(q => q.MustBeCompletedUntil, now + dequeueOptions.ConfirmTime), updateOptions);
 
 			return queueItem;
 		}
 
-		public Task<TPayload> Dequeue()
+		public Task<QueueItem<TPayload>> Dequeue()
 		{
 			return Dequeue(DefaultDequeueOptions);
 		}
@@ -76,6 +76,11 @@ namespace MongoSimpleQueue
 		public async Task Clear()
 		{
 			await _collection.DeleteManyAsync(q => true);
+		}
+
+		public async Task Confirm(QueueItem<TPayload> item)
+		{
+			await _collection.DeleteOneAsync(q => q.Id == item.Id);
 		}
 	}
 }

@@ -65,7 +65,7 @@ namespace MongoSimpleQueue.Tests
 
 			for (byte i = 200; i >= 1; i--)
 			{
-				Assert.AreEqual(i.ToString(), (await queue.Dequeue()).Value);
+				Assert.AreEqual(i.ToString(), (await queue.Dequeue()).Payload.Value);
 			}
 
 
@@ -92,7 +92,7 @@ namespace MongoSimpleQueue.Tests
 
 			for (int i = 0; i < 100; i++)
 			{
-				Assert.AreEqual(i.ToString(), (await queue.Dequeue()).Value);
+				Assert.AreEqual(i.ToString(), (await queue.Dequeue()).Payload.Value);
 			}
 
 

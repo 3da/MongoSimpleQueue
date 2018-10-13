@@ -11,7 +11,7 @@ namespace MongoSimpleQueue.Tests
 	public class RealLifeTests
 	{
 		private int _totalConsumed;
-		private Random _random = new Random();
+		private Random _random = new Random(7564);
 
 		[TestMethod]
 		public async Task Test()
@@ -23,22 +23,25 @@ namespace MongoSimpleQueue.Tests
 
 			for (int i = 0; i < 4; i++)
 			{
-				producers.Add(Task.Run(() => Produce(queue, 10)));
+				producers.Add(Task.Run(() => Produce(10)));
 			}
+
 
 			var consumers = new List<Task>();
 
 			for (int i = 0; i < 8; i++)
-				consumers.Add(Task.Run(() => Consume(queue)));
+				consumers.Add(Task.Run(Consume));
 
-			await Task.Delay(2500);
-			await Task.WhenAll(producers);
+
+			await Task.WhenAll(producers.Concat(consumers));
+
 
 			Assert.AreEqual(40, _totalConsumed);
 		}
 
-		private async Task Produce(SimpleQueue<SimpleDocument> queue, int count)
+		private async Task Produce(int count)
 		{
+			var queue = new SimpleQueue<SimpleDocument>(this.GetType().FullName);
 			for (int i = 0; i < count; i++)
 			{
 
@@ -50,16 +53,18 @@ namespace MongoSimpleQueue.Tests
 			}
 		}
 
-		private async Task Consume(SimpleQueue<SimpleDocument> queue)
+		private async Task Consume()
 		{
-			while (true)
+			var queue = new SimpleQueue<SimpleDocument>(this.GetType().FullName);
+			while (_totalConsumed < 40)
 			{
-				var document = await queue.Dequeue();
+				var item = await queue.Dequeue();
 
-				if (document != null)
+				if (item != null)
 				{
-					Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] Consumed: {document}");
+					Console.WriteLine($"[{Thread.CurrentThread.ManagedThreadId}] Consumed: {item.Payload}");
 					Interlocked.Increment(ref _totalConsumed);
+					await queue.Confirm(item);
 				}
 
 				//Very long work
